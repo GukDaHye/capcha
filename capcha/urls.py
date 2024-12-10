@@ -16,9 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from . import views
+
+from webcam_yolo import detect_objects
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('detect/', views.detect_objects, name='detect_objects'),
+    path('detect/', detect_objects, name='detect_objects'),
 ]
