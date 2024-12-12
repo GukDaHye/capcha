@@ -17,9 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from main.views import IndexView
 from webcam_yolo import detect_objects
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('detect/', detect_objects, name='detect_objects'),
+    path('', IndexView.as_view(), name='index'),
 ]

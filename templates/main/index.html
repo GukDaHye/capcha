@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bus Congestion System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    header {
+      background-color: #5299e6;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+    }
+    table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>CMS [CAPCAH]</h1>
+  <p>Real-time Updates on Bus Stop Congestion</p>
+</header>
+<main>
+  <table>
+    <thead>
+    <tr>
+      <th>Bus Stop</th>
+      <th>Student Count</th>
+      <th>Congestion Level</th>
+      <th>Last Updated</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for data in congestion_data %}
+    <tr>
+      <td>{{ data.stop.name }}</td>
+      <td>{{ data.student_count }}</td>
+      <td>{{ data.congestion_level }}</td>
+      <td>{{ data.timestamp }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</main>
+</body>
+</html>
