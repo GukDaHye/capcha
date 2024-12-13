@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>가천대 무당이 셔틀</title>
+  <style>
+    body {
+      font-family: 'Nanum Gothic', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #e6f7ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background-color: #cceeff;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #003399;
+    }
+
+    .content {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .status {
+      font-size: 20px;
+      margin: 20px 0;
+    }
+
+    .status span {
+      color: #28a745;
+      font-weight: bold;
+      font-size: 28px;
+    }
+
+    .waiting-time {
+      font-size: 18px;
+      margin: 20px 0;
+    }
+
+    .waiting-time span {
+      color: #003399;
+      font-size: 36px;
+      font-weight: bold;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      background-color: #f7f7f7;
+      padding: 10px 20px;
+      border-top: 1px solid #ddd;
+    }
+
+    .footer div {
+      text-align: center;
+    }
+
+    .footer div span {
+      display: block;
+      font-weight: bold;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+
+    .character {
+      margin-top: 20px;
+    }
+
+    .character img {
+      width: 200px;
+      height: 200px;
+      max-width: none; /* max-width 제한을 해제 */
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>가천대 무당이 셔틀</h1>
+  </div>
+  <div class="content">
+    <div class="status">
+      지금 이시각 무당이는 <span>여유</span>
+    </div>
+    <div class="waiting-time">
+      예상 대기시간 <span>05</span> 분
+    </div>
+    <div class="character">
+      <img src="../static/images/character.png" alt="무당이 캐릭터">
+    </div>
+  </div>
+  <div class="footer">
+    <div>
+      <span>셔틀운영시간</span>
+      <span>08:30 - 17:30</span>
+    </div>
+    <div>
+      <span>캠퍼스 맵</span>
+      <span></span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

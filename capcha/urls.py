@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from main.views import IndexView
 from webcam_yolo import detect_objects
@@ -23,5 +23,6 @@ from webcam_yolo import detect_objects
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('detect/', detect_objects, name='detect_objects'),
+    path('', include('main.urls')),
     path('', IndexView.as_view(), name='index'),
 ]
