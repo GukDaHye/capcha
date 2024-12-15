@@ -1,125 +1,210 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>가천대 무당이 셔틀</title>
-  <style>
-    body {
-      font-family: 'Nanum Gothic', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #e6f7ff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가천대 무당이 셔틀</title>
+    <style>
+        body {
+            font-family: 'Nanum Gothic', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e6f7ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /*height: 100vh; !* 화면 높이 100% *!*/
+        }
 
-    .container {
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-    }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #e6f7ff;
+            border-radius: 10px;
+            /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/
+            overflow: hidden;
+            position: relative;
+            /*height: 100vh; !* 컨테이너 높이도 화면 전체 *!*/
 
-    .header {
-      background-color: #cceeff;
-      padding: 20px;
-      text-align: center;
-    }
+        }
 
-    .header h1 {
-      margin: 0;
-      font-size: 24px;
-      color: #003399;
-    }
+        .header {
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+        }
 
-    .content {
-      padding: 20px;
-      text-align: center;
-    }
+        .header h1 {
+            font-size: 24px;
+            color: #003399;
+        }
 
-    .status {
-      font-size: 20px;
-      margin: 20px 0;
-    }
+        .content1 {
+            padding: 0 20px;
+            position: relative;
+        }
 
-    .status span {
-      color: #28a745;
-      font-weight: bold;
-      font-size: 28px;
-    }
+        .content1 img {
+            width: 100%;
+            height: auto;
+        }
 
-    .waiting-time {
-      font-size: 18px;
-      margin: 20px 0;
-    }
+        .content1 .status {
+            font-size: 20px;
+            margin: 20px 10px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; /* Set the width to 100% */
+            box-sizing: border-box; /* Include padding in the width */
+            font-weight: bold;
+            border-radius: 5px;
+        }
 
-    .waiting-time span {
-      color: #003399;
-      font-size: 36px;
-      font-weight: bold;
-    }
+        .content1 .status .left-align {
+            padding: 10px 25px;
+        }
 
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      background-color: #f7f7f7;
-      padding: 10px 20px;
-      border-top: 1px solid #ddd;
-    }
+        .content1 .status span {
+            color: #28a745;
+            font-size: 50px;
+            display: block;
+            text-align: center;
+        }
 
-    .footer div {
-      text-align: center;
-    }
+        .content2 {
+            padding: 0 20px;
+            text-align: center;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
 
-    .footer div span {
-      display: block;
-      font-weight: bold;
-      font-size: 16px;
-      margin-top: 5px;
-    }
 
-    .character {
-      margin-top: 20px;
-    }
+        .waiting-time {
+            color: #003399;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0;
+            flex: 1;
 
-    .character img {
-      width: 200px;
-      height: 200px;
-      max-width: none; /* max-width 제한을 해제 */
-    }
-  </style>
+        }
+
+        .waiting-time .minutes {
+            padding: 10px 0 0 0;
+        }
+
+        .waiting-time span {
+            font-size: 45px;
+            font-weight: bold;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            /*margin-bottom: 30px;*/
+        }
+
+        .footer div {
+            text-align: center;
+            /*border: 1px solid #000; !* Add border *!*/
+            border-radius: 10px;
+            height: 154px;
+            width: 154px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1; /* Ensure equal spacing */
+            margin: 0 10px;
+        }
+
+        .footer div span {
+            display: block;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        .footer .campus_map img {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+
+
+        .character img {
+            width: 168px;
+            height: 168px;
+            max-width: none;
+        }
+
+        .footer img {
+            width: 83px;
+            height: 83px;
+            margin-top: 10px;
+
+        }
+
+        /*@media (max-width: 600px) {*/
+        /*    .container {*/
+        /*        max-width: 100%;*/
+        /*    }*/
+
+        /*    .content1 {*/
+        /*        flex-direction: column;*/
+        /*    }*/
+
+        /*    .character img {*/
+        /*        width: 100%;*/
+        /*        height: auto;*/
+        /*    }*/
+        /*}*/
+    </style>
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <h1>가천대 무당이 셔틀</h1>
-  </div>
-  <div class="content">
-    <div class="status">
-      지금 이시각 무당이는 <span>여유</span>
+    <div class="header">
+        <img src="../static/images/gachonlogo.png" alt="가천대 로고">
+        <h1>가천대 무당이 셔틀</h1>
     </div>
-    <div class="waiting-time">
-      예상 대기시간 <span>05</span> 분
+
+    <div class="content1">
+        <img src="../../static/images/toprectangle.png" alt="상단 사각형">
+        <div class="status">
+            <div class="left-align">지금 이시각 무당이는</div>
+            <span>"여유"</span>
+        </div>
     </div>
-    <div class="character">
-      <img src="../static/images/character.png" alt="무당이 캐릭터">
+
+    <div class="content2">
+        <div class="character">
+            <img src="../../static/images/character.png" alt="무당이 캐릭터">
+        </div>
+        <div class="waiting-time">
+            예상 대기시간
+            <div class="minutes">
+                <span>05</span> 분
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="footer">
-    <div>
-      <span>셔틀운영시간</span>
-      <span>08:30 - 17:30</span>
+    <div class="footer">
+        <div>
+            <span>셔틀운영시간</span>
+            <span>08:30 - 17:30</span>
+        </div>
+        <div class="campus_map">
+            <span>캠퍼스 맵</span>
+            <a href="{% url 'main:dashboard_map' %}">
+                <img src="../static/images/mapicon.png" alt="지도 로고">
+            </a>
+        </div>
     </div>
-    <div>
-      <span>캠퍼스 맵</span>
-      <span></span>
-    </div>
-  </div>
 </div>
 </body>
 </html>
