@@ -1,6 +1,6 @@
+# views.py
 import serial
 import time
-import platform
 from django.http import JsonResponse
 
 # Function to check if the script is running on a Raspberry Pi
@@ -11,7 +11,7 @@ def is_raspberry_pi():
     except FileNotFoundError:
         return False
 
-# Function to configure serial only on Raspberry Pi
+# Function to configure the serial connection
 def configure_serial():
     if not is_raspberry_pi():
         raise EnvironmentError("This script is intended to run only on a Raspberry Pi.")
@@ -29,30 +29,27 @@ try:
     ser = configure_serial()
 except EnvironmentError as e:
     print(f"EnvironmentError: {e}")
-    ser = None  # Serial is not configured if not running on Raspberry Pi
+    ser = None
 
-# Function to send a single character via UART
-def send_char(value):
+# Function to send an 8-bit integer via UART
+def send_count(value):
     if ser is None:
         raise EnvironmentError("Serial port is not available. Ensure this is running on a Raspberry Pi.")
-    if isinstance(value, str) and len(value) == 1:  # Ensure it's a single character
-        ser.write(value.encode())  # Convert to bytes and send
+    if 0 <= value <= 255:
+        ser.write(value.to_bytes(1, byteorder='big'))  # Send as a single byte
+        print(f"Sent: {value} (Binary: {bin(value)[2:].zfill(8)})")
     else:
-        raise ValueError("Invalid character.")
+        raise ValueError(f"Value {value} is out of range (0-255).")
 
-# Function to send the string "human" via UART
-def send_human():
-    if ser is None:
-        raise EnvironmentError("Serial port is not available. Ensure this is running on a Raspberry Pi.")
-    word = "human"
-    for char in word:
-        send_char(char)
-        time.sleep(0.05)
-
-# Django view to trigger sending "human"
-def send_human_view(request):
+# Django view to trigger the send_count function
+def send_uart_sequence(request):
     try:
-        send_human()
-        return JsonResponse({'status': 'success', 'message': 'Message "human" sent successfully.'})
+        if ser:
+            for value in [2, 9, 11]:  # Sequence of numbers to send
+                send_count(value)
+                time.sleep(1)  # Delay between sending each number
+            return JsonResponse({'status': 'success', 'message': 'Sequence sent successfully.'})
+        else:
+            raise EnvironmentError("Serial connection not initialized.")
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)})
