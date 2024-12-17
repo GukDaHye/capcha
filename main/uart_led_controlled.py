@@ -1,14 +1,27 @@
 # views.py
+import os
+
 import serial
 import time
 from django.http import JsonResponse
 
-# Function to check if the script is running on a Raspberry Pi
 def is_raspberry_pi():
+    # First, check if the /proc/device-tree/model file exists
+    if os.path.exists('/proc/device-tree/model'):
+        try:
+            with open('/proc/device-tree/model') as f:
+                return 'Raspberry Pi' in f.read()
+        except Exception as e:
+            print(f"Error reading /proc/device-tree/model: {e}")
+            return False
+
+    # Fallback: Check /proc/cpuinfo for Raspberry Pi-specific hardware
     try:
-        with open('/proc/device-tree/model') as f:
-            return 'Raspberry Pi' in f.read()
-    except FileNotFoundError:
+        with open('/proc/cpuinfo') as f:
+            cpuinfo = f.read()
+        return 'BCM' in cpuinfo or 'Raspberry Pi' in cpuinfo
+    except Exception as e:
+        print(f"Error reading /proc/cpuinfo: {e}")
         return False
 
 # Function to configure the serial connection
