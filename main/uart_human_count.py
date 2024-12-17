@@ -25,8 +25,8 @@ def is_raspberry_pi():
         return False
 # Function to configure serial only on Raspberry Pi
 def configure_serial():
-    if not is_raspberry_pi():
-        raise EnvironmentError("This script is intended to run only on a Raspberry Pi.")
+    # if not is_raspberry_pi():
+    #     raise EnvironmentError("This script is intended to run only on a Raspberry Pi.")
     return serial.Serial(
         port='/dev/serial0',
         baudrate=9600,
