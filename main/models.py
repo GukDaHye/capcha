@@ -19,6 +19,10 @@ class BusStop(models.Model):
     def __str__(self):
         return self.name
 
+def upload_to(instance, filename):
+    """Define upload path for congestion images"""
+    return f'congestion_images/{instance.stop.name}/{filename}'
+
 class CongestionData(models.Model):
     CONGESTION_CHOICES = [
         ('Empty', 'Empty'),
@@ -27,7 +31,7 @@ class CongestionData(models.Model):
     ]
 
     record_id = models.AutoField(primary_key=True)
-    stop = models.ForeignKey(BusStop, on_delete=models.CASCADE)
+    stop = models.ForeignKey('BusStop', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     student_count = models.IntegerField()
     congestion_level = models.CharField(
@@ -35,6 +39,7 @@ class CongestionData(models.Model):
         choices=CONGESTION_CHOICES,
         default='Empty'
     )
+    image = models.ImageField(upload_to=upload_to, blank=True, null=True)  # New field for storing image
 
     def __str__(self):
         return f"{self.stop.name} - {self.congestion_level} at {self.timestamp}"

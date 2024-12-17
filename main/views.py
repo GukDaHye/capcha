@@ -1,3 +1,5 @@
+import base64
+import os
 import time
 
 import serial
@@ -6,6 +8,7 @@ from django.shortcuts import render
 from django.views import View
 from django.views.generic import TemplateView
 
+from capcha import settings
 from main.webcam_yolo import detect_objects
 from .models import CongestionData, BusStop
 
@@ -28,6 +31,7 @@ class DashboardView(TemplateView):
         context['congestion_data'] = CongestionData.objects.select_related('stop').order_by('-timestamp')[:10]
         return context
 
+
 class DashboardMapView(TemplateView):
     template_name = 'main/dashboard_map.html'
 
@@ -44,7 +48,7 @@ class ObjectDetectionView(View):
         """
         Send a single character via UART.
         """
-        if isinstance(value, str) and len(value) == 1:  # Ensure it's a single character
+        if isinstance(value, str) and len(value) == 1:
             ser.write(value.encode())  # Convert to bytes and send
             print(f"Sent: '{value}' (ASCII: {ord(value)})")
         else:
@@ -56,40 +60,63 @@ class ObjectDetectionView(View):
         """
         word = "human"
         for char in word:
-            self.send_char(ser, char)  # Send each character in the word
-            time.sleep(0.05)  # Add a short delay between characters to ensure proper timing
+            self.send_char(ser, char)
+            time.sleep(0.05)  # Add delay for UART transmission
         print("Sent: 'human'")
 
+    def save_image(self, img_base64, stop_name):
+        """
+        Save base64 image to media directory.
+        """
+        # Decode the image
+        img_data = base64.b64decode(img_base64)
+        # Define the file path
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        filename = f"{stop_name}_{timestamp}.jpg"
+        filepath = os.path.join(settings.MEDIA_ROOT, 'congestion_images', stop_name, filename)
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)  # Ensure directory exists
+
+        # Write the image to disk
+        with open(filepath, 'wb') as f:
+            f.write(img_data)
+
+        # Return relative path for storing in the database
+        return os.path.relpath(filepath, settings.MEDIA_ROOT)
+
     def get(self, request, *args, **kwargs):
-        # detect_objects 함수를 호출하여 YOLO 감지 수행
+        # YOLO 감지 수행
         result = detect_objects()
 
         # 에러가 발생하면 JSON 응답 반환
         if "error" in result:
             return JsonResponse({"error": result["error"]}, status=500)
 
-        # Count the number of "person" class detections (assuming class ID 0 corresponds to "person")
+        # Count persons detected
         person_count = sum(1 for det in result["detections"] if det["class"] == 0)
         print(f"Detected {person_count} persons.")
 
-        # Save the detection result to CongestionData
+        # Save detection result to CongestionData
         try:
-            # Get the bus stop instance (bus stop ID is hardcoded to 1 for this example)
+            # Get the bus stop instance
             bus_stop = BusStop.objects.get(stop_id=1)
 
-            # Determine congestion level based on person count
+            # Determine congestion level
             if person_count == 0:
-                congestion_level = "Empty"
+                congestion_level = 'Empty'
             elif person_count <= bus_stop.capacity // 2:
-                congestion_level = "Moderate"
+                congestion_level = 'Moderate'
             else:
-                congestion_level = "High"
+                congestion_level = 'High'
 
-            # Save data to CongestionData model
+            # Save image to media directory
+            image_path = self.save_image(result["image_data"], bus_stop.name)
+
+            # Save congestion data
             congestion_data = CongestionData.objects.create(
                 stop=bus_stop,
                 student_count=person_count,
-                congestion_level=congestion_level
+                congestion_level=congestion_level,
+                image=image_path
             )
             print(f"Saved congestion data: {congestion_data}")
 
@@ -100,8 +127,8 @@ class ObjectDetectionView(View):
         # UART 전송
         try:
             ser = serial.Serial(
-                port='/dev/serial0',  # UART port on Raspberry Pi
-                baudrate=9600,       # Baud rate (matches FPGA prescaler)
+                port='/dev/serial0',
+                baudrate=9600,
                 parity=serial.PARITY_NONE,
                 stopbits=serial.STOPBITS_ONE,
                 bytesize=serial.EIGHTBITS,
@@ -119,7 +146,7 @@ class ObjectDetectionView(View):
 
         finally:
             if 'ser' in locals() and ser.is_open:
-                ser.close()  # Close the serial connection
+                ser.close()
 
         # 템플릿 렌더링
         context = {
