@@ -20,11 +20,21 @@ class BusStop(models.Model):
         return self.name
 
 class CongestionData(models.Model):
+    CONGESTION_CHOICES = [
+        ('Empty', 'Empty'),
+        ('Moderate', 'Moderate'),
+        ('High', 'High'),
+    ]
+
     record_id = models.AutoField(primary_key=True)
     stop = models.ForeignKey(BusStop, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     student_count = models.IntegerField()
-    congestion_level = models.CharField(max_length=50)
+    congestion_level = models.CharField(
+        max_length=50,
+        choices=CONGESTION_CHOICES,
+        default='Empty'
+    )
 
     def __str__(self):
         return f"{self.stop.name} - {self.congestion_level} at {self.timestamp}"
