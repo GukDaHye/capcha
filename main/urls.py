@@ -1,5 +1,6 @@
 from django.urls import path
 
+from main.detect_person import detect_objects_person_see
 from main.uart_human_count import send_human_view
 from main.uart_led_controlled import send_uart_sequence
 from main.views import DashboardView, DashboardMapView, ObjectDetectionView
@@ -12,5 +13,6 @@ urlpatterns = [
     path('detect/', ObjectDetectionView.as_view(), name='object_detection'),
     path('send-human/', send_human_view, name='send_human'),
     path('send-count/', send_uart_sequence, name='send_uart_sequence'),
+    path('send-object/', detect_objects_person_see, name='send_object'),
 
 ]
