@@ -33,7 +33,32 @@
     tr:hover {
       background-color: #f1f1f1;
     }
+    .trigger {
+      display: block;
+      text-align: center;
+      margin: 20px;
+      padding: 10px 20px;
+      background-color: #5299e6;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    .trigger:hover {
+      background-color: #4178c7;
+    }
   </style>
+  <script>
+    function sendHuman() {
+      fetch("{% url 'send_human' %}")
+              .then(response => response.json())
+              .then(data => {
+                alert(data.message);
+              })
+              .catch(error => {
+                alert('Error: ' + error);
+              });
+    }
+  </script>
 </head>
 <body>
 <header>
@@ -42,6 +67,7 @@
   <a href="{% url 'main:dashboard' %}">Dashboard</a>
 </header>
 <main>
+  <a href="#" class="trigger" onclick="sendHuman()">Send "human" via UART</a>
   <table>
     <thead>
     <tr>

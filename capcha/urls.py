@@ -16,10 +16,15 @@ Including another URLconf
 """
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 from django.urls import path, include
 
 from capcha import settings
 from main.views import IndexView
+
+admin.site.site_header = _("CMS 무당이 교통 혼잡도")  # Admin 페이지 상단 제목
+admin.site.site_title = _("Bus Congestion Admin Portal")     # 브라우저 탭 제목
+admin.site.index_title = _("Welcome to the Bus Congestion Admin Panel")  # Index 페이지 제목
 
 urlpatterns = [
     path('admin/', admin.site.urls),
