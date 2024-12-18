@@ -149,6 +149,8 @@ class ObjectDetectionView(View):
             # if person_count > 0:
             #     print("Sending 'human' via UART...")
             self.send_human(ser)
+            self.send_human(ser)
+            self.send_human(ser)
             # else:
             #     print("No humans detected. Nothing to send via UART.")
 
