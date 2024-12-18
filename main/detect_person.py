@@ -85,7 +85,7 @@ def detect_objects_person(request, image_path=None):
     else:
         # 웹캠 초기화
         usb_camera_index = 0  # USB 카메라 기본 인덱스
-        default_camera_index = 1  # 내장 카메라 기본 인덱스
+        default_camera_index = 0  # 내장 카메라 기본 인덱스
 
         # USB 카메라 우선 접근
         cap = cv2.VideoCapture(usb_camera_index)
@@ -126,7 +126,7 @@ def detect_objects_person(request, image_path=None):
     masked_frame = cv2.bitwise_and(frame, frame, mask=mask)
 
     # YOLO 객체 감지 (사람만)
-    results = model.predict(masked_frame, imgsz=640, conf=0.5, classes=0)
+    results = model.predict(masked_frame, imgsz=1280, conf=0.5)
 
     # ROI 내부 사람 수 필터링 및 바운딩 박스 그리기
     person_count = 0
