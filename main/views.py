@@ -154,20 +154,23 @@ class ObjectDetectionView(View):
                 timeout=1
             )
 
-            # if person_count > 0:
-            #     print("Sending 'human' via UART...")
-            # self.send_human(ser)
+            if person_count > 0:
+                print("Sending 'human' via UART...")
+                for _ in range(person_count):
+                 self.send_human(ser)
 
-            # else:
-            #     print("No humans detected. Nothing to send via UART.")
-
-            for _ in range(5):
-                self.send_human(ser)
+            else:
+                print("No humans detected. Nothing to send via UART.")
 
             self.send_char_at(ser, '@')
 
-            for _ in range(8):
-                self.send_human(ser)
+            # for _ in range(5):
+            #     self.send_human(ser)
+            #
+            # self.send_char_at(ser, '@')
+            #
+            # for _ in range(8):
+            #     self.send_human(ser)
             self.send_char_at(ser, '@')
 
 

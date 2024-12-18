@@ -118,7 +118,7 @@ def detect_objects_person(request, image_path=None):
     ], dtype=np.int32)
 
     # ROI 영역 시각적으로 표시 (다각형)
-    cv2.polylines(frame, [roi_points], isClosed=True, color=(0, 255, 255), thickness=3)  # 노란색 다각형 표시
+    # cv2.polylines(frame, [roi_points], isClosed=True, color=(0, 255, 255), thickness=3)  # 노란색 다각형 표시
 
     # ROI 외부를 마스킹한 이미지 생성
     mask = np.zeros(frame.shape[:2], dtype=np.uint8)
