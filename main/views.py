@@ -10,7 +10,7 @@ from django.views.generic import TemplateView
 
 from capcha import settings
 from main.webcam_yolo import detect_objects
-from .detect_person import detect_objects_person, detect_objects_person_ver2
+from .detect_person import detect_objects_person_all_frame, detect_objects_person_ver2, detect_objects_person_ver3
 from .models import CongestionData, BusStop
 
 
@@ -55,14 +55,6 @@ class ObjectDetectionView(View):
         else:
             print(f"Error: '{value}' is not a valid character.")
 
-    def send_char_at(self, ser, char):
-        """
-        Send a single character via UART.
-        """
-        ser.write(char.encode('utf-8'))
-        print(f"Sent char: {char}")
-
-
     def send_human(self, ser):
         """
         Send the string "human" via UART.
@@ -73,12 +65,39 @@ class ObjectDetectionView(View):
             time.sleep(0.05)  # Add delay for UART transmission
         print("Sent: 'human'")
 
+    def determine_congestion(self, person_locations, rois):
+        """
+        Determine congestion level based on person locations and ROIs.
+        """
+        detected = {
+            'empty': False,
+            'moderate': False,
+            'high': False
+        }
+
+        for location in person_locations:
+            for roi_name, roi_coords in rois.items():
+                if location in roi_coords:
+                    detected[roi_name] = True
+
+        # Determine congestion level
+        if detected['high'] or (detected['moderate'] and detected['empty']):
+            return 'High'
+        elif detected['moderate']:
+            return 'Moderate'
+        else:
+            return 'Empty'
+
     def save_image(self, img_base64, stop_name):
         """
         Save base64 image to media directory.
         """
+        import base64, os, time
+        from django.conf import settings
+
         # Decode the image
         img_data = base64.b64decode(img_base64)
+
         # Define the file path
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         filename = f"{stop_name}_{timestamp}.jpg"
@@ -92,12 +111,13 @@ class ObjectDetectionView(View):
         # Return relative path for storing in the database
         return os.path.relpath(filepath, settings.MEDIA_ROOT)
 
+
     def get(self, request, *args, **kwargs):
-    #     YOLO 감지 수행 (웹캠 사용)
-    #     result = detect_objects()
+        #     YOLO 감지 수행 (웹캠 사용)
+        #     result = detect_objects()
 
         # 1. 웹캠 사용
-        result= detect_objects_person(request)
+        # result= detect_objects_person_all_frame(request)
         # print(result)
 
         # 2. 이미지 파일 사용
@@ -106,7 +126,11 @@ class ObjectDetectionView(View):
         # print(result)
 
 
-        # 에러가 발생하면 JSON 응답 반환
+    # Use YOLO to detect objects (e.g., from an image file or webcam)
+        image_path = os.path.join(settings.BASE_DIR, "media/yolo_list/bus001.jpeg")
+        result = detect_objects_person_ver2(request, image_path=image_path)
+
+        # Handle errors
         if "error" in result:
             return JsonResponse({"error": result["error"]}, status=500)
 
@@ -114,36 +138,37 @@ class ObjectDetectionView(View):
         person_count = sum(1 for det in result["detections"] if det["class"] == 0)
         print(f"Detected {person_count} persons.")
 
-        # Save detection result to CongestionData
+        # Extract person detections
+        # person_locations = [det["bbox"] for det in result["detections"] if det["class"] == 0]
+        # print(f"Person locations: {person_locations}")
+        #
+        # # Determine congestion level
+        # congestion_level = self.determine_congestion(person_locations, rois)
+        # print(f"Congestion level: {congestion_level}")
+
+        # Save congestion data
         try:
-            # Get the bus stop instance
             bus_stop = BusStop.objects.get(stop_id=1)
 
-            # Determine congestion level
-            if person_count == 0:
-                congestion_level = 'Empty'
-            elif person_count <= bus_stop.capacity // 2:
-                congestion_level = 'Moderate'
-            else:
-                congestion_level = 'High'
-
-            # Save image to media directory
+            # Save image
             image_path = self.save_image(result["image_data"], bus_stop.name)
+            congestion_level = result["overall_congestion"]
 
-            # Save congestion data
+            # Save to database
             congestion_data = CongestionData.objects.create(
                 stop=bus_stop,
+                # student_count=len(person_locations),
                 student_count=person_count,
                 congestion_level=congestion_level,
                 image=image_path
             )
-            print(f"Saved congestion data: {congestion_data}")
+            print(f"Saved congestion data: {congestion_data}  result: {result['congestion_levels']}")
 
         except BusStop.DoesNotExist:
             print("Bus stop with ID 1 does not exist.")
             return JsonResponse({"error": "Bus stop not found"}, status=500)
 
-        # UART 전송
+        # UART Transmission
         try:
             ser = serial.Serial(
                 port='/dev/serial0',
@@ -154,24 +179,23 @@ class ObjectDetectionView(View):
                 timeout=1
             )
 
+            # if congestion_level == 'High':
+            #     self.send_char(ser, 'H')  # High congestion
+            # elif congestion_level == 'Moderate':
+            #     self.send_char(ser, 'M')  # Moderate congestion
+            # elif congestion_level == 'Empty':
+            #     self.send_char(ser, 'E')  # Empty congestion
+
+            self.send_char(ser, '@')  # End transmission
+
+
             if person_count > 0:
                 print("Sending 'human' via UART...")
                 for _ in range(person_count):
-                 self.send_human(ser)
+                    self.send_human(ser)
 
             else:
                 print("No humans detected. Nothing to send via UART.")
-
-            self.send_char_at(ser, '@')
-
-            # for _ in range(5):
-            #     self.send_human(ser)
-            #
-            # self.send_char_at(ser, '@')
-            #
-            # for _ in range(8):
-            #     self.send_human(ser)
-            self.send_char_at(ser, '@')
 
 
         except serial.SerialException as e:
@@ -181,7 +205,7 @@ class ObjectDetectionView(View):
             if 'ser' in locals() and ser.is_open:
                 ser.close()
 
-        # 템플릿 렌더링
+        # Render the template with detection results
         context = {
             "image_data": result["image_data"],
             "detections": result["detections"],
