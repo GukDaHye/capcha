@@ -74,7 +74,7 @@ def detect_objects_person_see(request):
 
 def detect_objects_person(request, image_path=None):
     # YOLO 모델 로드
-    model = YOLO("../yolo11n.pt")  # YOLO 모델 경로 확인
+    model = YOLO("../yolov8s.pt")  # YOLO 모델 경로 확인
 
     # 이미지 소스 선택
     if image_path:
@@ -172,7 +172,7 @@ def detect_objects_person(request, image_path=None):
 
 def detect_objects_person_ver2(request, image_path=None):
     # YOLO 모델 로드
-    model = YOLO("../yolo11n.pt")  # YOLO 모델 경로 확인
+    model = YOLO("yolov8n.pt")
 
     # 이미지 소스 선택
     if image_path:
