@@ -59,11 +59,11 @@ class ObjectDetectionView(View):
         """
         Send the string "human" via UART.
         """
-        word = "human"
+        word = "h3"
         for char in word:
             self.send_char(ser, char)
             time.sleep(0.05)  # Add delay for UART transmission
-        print("Sent: 'human'")
+        print("Sent: 'h3'")
 
     def save_image(self, img_base64, stop_name):
         """
@@ -146,11 +146,8 @@ class ObjectDetectionView(View):
                 timeout=1
             )
 
-            if person_count > 0:
-                print("Sending 'human' via UART...")
-                self.send_human(ser)
-            else:
-                print("No humans detected. Nothing to send via UART.")
+            print("Sending 'h3' via UART...")
+            self.send_human(ser)
 
         except serial.SerialException as e:
             print(f"Serial error: {e}")
