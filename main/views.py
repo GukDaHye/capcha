@@ -89,12 +89,12 @@ class ObjectDetectionView(View):
     #     result = detect_objects()
 
         # 1. 웹캠 사용
-        result= detect_objects_person(request)
-        print(result)
+        # result= detect_objects_person(request)
+        # print(result)
 
         # 2. 이미지 파일 사용
-        # image_path = os.path.join(settings.BASE_DIR, "media/yolo_list/bus001.jpeg")
-        # result = detect_objects_person(request, image_path=image_path)
+        image_path = os.path.join(settings.BASE_DIR, "media/yolo_list/bus001.jpeg")
+        result = detect_objects_person(request, image_path=image_path)
         # print(result)
 
 
