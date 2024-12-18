@@ -10,7 +10,7 @@ from django.views.generic import TemplateView
 
 from capcha import settings
 from main.webcam_yolo import detect_objects
-from .detect_person import detect_objects_person
+from .detect_person import detect_objects_person, detect_objects_person_ver2
 from .models import CongestionData, BusStop
 
 
@@ -89,12 +89,12 @@ class ObjectDetectionView(View):
     #     result = detect_objects()
 
         # 1. 웹캠 사용
-        # result= detect_objects_person(request)
+        result= detect_objects_person(request)
         # print(result)
 
         # 2. 이미지 파일 사용
-        image_path = os.path.join(settings.BASE_DIR, "media/yolo_list/bus001.jpeg")
-        result = detect_objects_person(request, image_path=image_path)
+        # image_path = os.path.join(settings.BASE_DIR, "media/yolo_list/bus001.jpeg")
+        # result = detect_objects_person_ver2(request, image_path=image_path)
         # print(result)
 
 
