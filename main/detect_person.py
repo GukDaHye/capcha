@@ -276,3 +276,8 @@ def detect_objects_person_ver2(request, image_path=None):
         "image_data": img_base64
     }
 
+
+
+# 5명 일때
+# @
+# 8명 + =3 11
