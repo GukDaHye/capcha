@@ -55,6 +55,14 @@ class ObjectDetectionView(View):
         else:
             print(f"Error: '{value}' is not a valid character.")
 
+    def send_char_at(self, ser, char):
+        """
+        Send a single character via UART.
+        """
+        ser.write(char.encode('utf-8'))
+        print(f"Sent char: {char}")
+
+
     def send_human(self, ser):
         """
         Send the string "human" via UART.
@@ -148,11 +156,20 @@ class ObjectDetectionView(View):
 
             # if person_count > 0:
             #     print("Sending 'human' via UART...")
-            self.send_human(ser)
-            self.send_human(ser)
-            self.send_human(ser)
+            # self.send_human(ser)
+
             # else:
             #     print("No humans detected. Nothing to send via UART.")
+
+            for _ in range(5):
+                self.send_human(ser)
+
+            self.send_char_at(ser, '@')
+
+            for _ in range(8):
+                self.send_human(ser)
+            self.send_char_at(ser, '@')
+
 
         except serial.SerialException as e:
             print(f"Serial error: {e}")
