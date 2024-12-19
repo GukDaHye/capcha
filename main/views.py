@@ -203,16 +203,11 @@ class ObjectDetectionView(View):
                 for _ in range(person_count+8):
                     self.send_human(ser)
                     print(f'person_count: {_+1}')
-                self.send_char(ser, '@')  # End transmission
-
-                for _ in range(person_count+10):
-                    self.send_human(ser)
-                    print(f'person_count: {_+1}')
 
             else:
                 print("No humans detected. Nothing to send via UART.")
 
-            # self.send_char(ser, '@')  # End transmission
+            self.send_char(ser, '@')  # End transmission
 
 
         except serial.SerialException as e:
