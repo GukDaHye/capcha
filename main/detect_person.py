@@ -352,8 +352,8 @@ def detect_objects_person_ver2(request, image_path=None):
     # 기준 ROI (기준 해상도 1600x901에서 작성된 좌표)
     ref_width, ref_height = 1600, 901
     rois = {
-        'empty': np.array([[213, 324], [814, 270], [877, 476], [988, 651], [702, 889], [278, 797]], dtype=np.float32),
-        'moderate': np.array([[814, 270], [1028, 223], [1134, 390], [1171, 483], [1119, 553], [988, 651], [877, 476]],
+        'empty': np.array([[213, 324], [800, 200], [877, 476], [970, 645], [702, 889], [278, 797]], dtype=np.float32),
+        'moderate': np.array([[800, 200], [1028, 223], [1134, 390], [1171, 483], [1119, 553], [970, 645], [877, 476]],
                              dtype=np.float32),
         'high': np.array([[1028, 223], [1306, 234], [1366, 253], [1352, 366], [1247, 415], [1171, 483], [1023, 399]],
                          dtype=np.float32)
@@ -377,7 +377,7 @@ def detect_objects_person_ver2(request, image_path=None):
         return {
             "region_counts": {key: 0 for key in scaled_rois.keys()},
             "congestion_levels": {key: "Low" for key in scaled_rois.keys()},
-            "overall_congestion": "여유",
+            "overall_congestion": "Empty",
             "detections": [],
             "image_data": None,  # 이미지 데이터가 필요 없을 경우
             "person_count": person_count
@@ -426,13 +426,13 @@ def detect_objects_person_ver2(request, image_path=None):
 
     # 전체 혼잡도 계산 (규칙 기반)
     if region_counts['high'] > 0 and region_counts['moderate'] > 0 and region_counts['empty'] > 0:
-        overall_congestion = "혼잡"
+        overall_congestion = "High"
     elif region_counts['moderate'] > 0 and region_counts['empty'] > 0:
-        overall_congestion = "보통"
+        overall_congestion = "Moderate"
     elif region_counts['empty'] > 0:
-        overall_congestion = "여유"
+        overall_congestion = "Empty"
     else:
-        overall_congestion = "여유"  # 사람이 없으면 여유로 간주
+        overall_congestion = "Empty"  # 사람이 없으면 여유로 간주
 
     # 결과 이미지 인코딩
     _, buffer = cv2.imencode('.jpg', frame)

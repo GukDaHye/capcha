@@ -25,9 +25,9 @@ def upload_to(instance, filename):
 
 class CongestionData(models.Model):
     CONGESTION_CHOICES = [
-        ('Empty', 'Empty'),
-        ('Moderate', 'Moderate'),
-        ('High', 'High'),
+        ('Empty', '여유'),
+        ('Moderate', '보통'),
+        ('High', '혼잡'),
     ]
 
     record_id = models.AutoField(primary_key=True)
@@ -42,7 +42,8 @@ class CongestionData(models.Model):
     image = models.ImageField(upload_to=upload_to, blank=True, null=True)  # New field for storing image
 
     def __str__(self):
-        return f"{self.stop.name} - {self.congestion_level} at {self.timestamp}"
+        return f"{self.stop.name} - {dict(self.CONGESTION_CHOICES).get(self.congestion_level, 'Unknown')} at {self.timestamp}"
+
 
 
 class SystemLog(models.Model):

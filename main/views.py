@@ -27,12 +27,19 @@ class IndexView(TemplateView):
 class DashboardView(TemplateView):
     template_name = 'main/dashboard.html'
 
+    CONGESTION_MAP = {
+        "Empty": "여유",
+        "Moderate": "보통",
+        "High": "혼잡"
+    }
+    # 영어에서 한글로 변환
+    congestion_level = CongestionData.objects.latest('timestamp').congestion_level
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # context['congestion_data'] = CongestionData.objects.select_related('stop').order_by('-timestamp')[:10]
-        # context['congestion_data'] = CongestionData.objects.get().congestion_level 최근 1개 congestion_level만 가져오기
-        context['congestion_data'] = CongestionData.objects.latest('timestamp').congestion_level
-        # context['congestion_data'] = CongestionData.objects.get().congestion_level
+        congestion_level = CongestionData.objects.latest('timestamp').congestion_level
+        translated_congestion = self.CONGESTION_MAP.get(congestion_level, "Empty")
+        context['congestion_data'] = translated_congestion  # 한글 변환된 값 전달
 
         return context
 
@@ -70,28 +77,28 @@ class ObjectDetectionView(View):
             time.sleep(0.5)  # Add delay for UART transmission
         print("Sent: 'human'")
 
-    def determine_congestion(self, person_locations, rois):
-        """
-        Determine congestion level based on person locations and ROIs.
-        """
-        detected = {
-            'empty': False,
-            'moderate': False,
-            'high': False
-        }
-
-        for location in person_locations:
-            for roi_name, roi_coords in rois.items():
-                if location in roi_coords:
-                    detected[roi_name] = True
-
-        # Determine congestion level
-        if detected['high'] or (detected['moderate'] and detected['empty']):
-            return 'High'
-        elif detected['moderate']:
-            return 'Moderate'
-        else:
-            return 'Empty'
+    # def determine_congestion(self, person_locations, rois):
+    #     """
+    #     Determine congestion level based on person locations and ROIs.
+    #     """
+    #     detected = {
+    #         'empty': False,
+    #         'moderate': False,
+    #         'high': False
+    #     }
+    # 
+    #     for location in person_locations:
+    #         for roi_name, roi_coords in rois.items():
+    #             if location in roi_coords:
+    #                 detected[roi_name] = True
+    # 
+    #     # Determine congestion level
+    #     if detected['high'] or (detected['moderate'] and detected['empty']):
+    #         return 'High'
+    #     elif detected['moderate']:
+    #         return 'Moderate'
+    #     else:
+    #         return 'Empty'
 
     def save_image(self, img_base64, stop_name):
         """
@@ -116,7 +123,6 @@ class ObjectDetectionView(View):
         # Return relative path for storing in the database
         return os.path.relpath(filepath, settings.MEDIA_ROOT)
 
-
     def get(self, request, *args, **kwargs):
         #     YOLO 감지 수행 (웹캠 사용)
         #     result = detect_objects()
@@ -130,11 +136,10 @@ class ObjectDetectionView(View):
         # result = detect_objects_person_ver2(request, image_path=image_path)
         # print(result)
 
-
-    # Use YOLO to detect objects (e.g., from an image file or webcam)
-    #     image_path = os.path.join(settings.BASE_DIR, "media/yolo_list/bus001.jpeg")
-    #     result = detect_objects_person_ver2(request, image_path=image_path)
-        result = detect_objects_person_ver2(request)
+        # Use YOLO to detect objects (e.g., from an image file or webcam)
+        image_path = os.path.join(settings.BASE_DIR, "media/yolo_list/bus001.jpeg")
+        result = detect_objects_person_ver2(request, image_path=image_path)
+        # result = detect_objects_person_ver2(request)
 
         # Handle errors
         if "error" in result:
@@ -193,10 +198,9 @@ class ObjectDetectionView(View):
             # elif congestion_level == 'Empty':
             #     self.send_char(ser, 'E')  # Empty congestion
 
-
             if person_count > 0:
                 print("Sending 'human' via UART...")
-                for _ in range(person_count+1):
+                for _ in range(person_count + 1):
                     self.send_human(ser)
                     print(f'person_count: {_}')
 
@@ -217,5 +221,6 @@ class ObjectDetectionView(View):
         context = {
             "image_data": result["image_data"],
             "detections": result["detections"],
+
         }
         return render(request, self.template_name, context)
