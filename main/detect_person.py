@@ -33,6 +33,17 @@ def detect_objects_person_see(request):
         [273, 757]  # 좌측 하단
     ], dtype=np.int32)
 
+    # ROI 다각형 좌표 설정 (순서 맞춤) (전체 학교 펜스 영역)
+    # roi_points = np.array([
+    #     [253, 327],  # 좌측 상단
+    #     [756, 274],  # 중앙 상단
+    #     [1026, 258],  # 우측 상단
+    #     [1135, 386],  # 우측 중단
+    #     [1124, 537],  # 우측 하단
+    #     [712, 896],  # 중앙 하단
+    #     [273, 757]  # 좌측 하단
+    # ], dtype=np.int32)
+
     # ROI 영역 시각적으로 표시 (다각형)
     cv2.polylines(frame, [roi_points], isClosed=True, color=(0, 255, 255), thickness=3)  # 노란색 다각형 표시
 
@@ -72,65 +83,38 @@ def detect_objects_person_see(request):
     return HttpResponse(buffer.tobytes(), content_type="image/jpeg")
 
 
-def detect_objects_person_all_frame(request, image_path=None):
-    # YOLO 모델 로드
-    model = YOLO("../yolov8s.pt")  # YOLO 모델 경로 확인
+import numpy as np
+import cv2
+import base64
+import time
+from ultralytics import YOLO
 
-    # 이미지 소스 선택
-    if image_path:
-        # 이미지 파일 읽기
-        frame = cv2.imread(image_path)
-        if frame is None:
-            return {"error": "Failed to read image. Check the image path."}
-    else:
-        # 웹캠 초기화
-        usb_camera_index = 0  # USB 카메라 기본 인덱스
-        default_camera_index = 0  # 내장 카메라 기본 인덱스
 
-        # USB 카메라 우선 접근
-        cap = cv2.VideoCapture(usb_camera_index)
-        if not cap.isOpened():
-            # USB 카메라 접근 실패 시 내장 카메라로 전환
-            cap = cv2.VideoCapture(default_camera_index)
+def calculate_roi_points(frame_width, frame_height, roi_ratio=0.8):
+    """
+    Calculate the coordinates of the ROI (Region of Interest) based on frame dimensions.
+    """
+    roi_height = int(frame_height * roi_ratio)  # 높이 비율 계산
+    roi_width = int(frame_width * roi_ratio)   # 너비 비율 계산
+    center_x, center_y = frame_width // 2, frame_height // 2
 
-        if not cap.isOpened():
-            return {"error": "No accessible webcam. Check your USB or default camera connection."}
-
-        # 카메라 초기화 시간 확보
-        time.sleep(2)  # 카메라 초기화 지연
-
-        # 프레임 캡처
-        ret, frame = cap.read()
-        cap.release()
-
-        if not ret:
-            return {"error": "Failed to capture frame from webcam"}
-
-    # ROI 다각형 좌표 설정 (순서 맞춤) (전체 펜스 영역)
     roi_points = np.array([
-        [253, 327],  # 좌측 상단
-        [756, 274],  # 중앙 상단
-        [1026, 258],  # 우측 상단
-        [1135, 386],  # 우측 중단
-        [1124, 537],  # 우측 하단
-        [712, 896],  # 중앙 하단
-        [273, 757]  # 좌측 하단
+        [center_x - roi_width // 2, center_y - roi_height // 2],  # 좌측 상단
+        [center_x + roi_width // 2, center_y - roi_height // 2],  # 우측 상단
+        [center_x + roi_width // 2, center_y + roi_height // 2],  # 우측 하단
+        [center_x - roi_width // 2, center_y + roi_height // 2]   # 좌측 하단
     ], dtype=np.int32)
 
-    # ROI 영역 시각적으로 표시 (다각형)
-    # cv2.polylines(frame, [roi_points], isClosed=True, color=(0, 255, 255), thickness=3)  # 노란색 다각형 표시
+    return roi_points
 
-    # ROI 외부를 마스킹한 이미지 생성
-    mask = np.zeros(frame.shape[:2], dtype=np.uint8)
-    cv2.fillPoly(mask, [roi_points], 255)  # 다각형 내부를 채움
-    masked_frame = cv2.bitwise_and(frame, frame, mask=mask)
 
-    # YOLO 객체 감지 (사람만)
-    results = model.predict(masked_frame, imgsz=1280, conf=0.5)
-
-    # ROI 내부 사람 수 필터링 및 바운딩 박스 그리기
+def draw_bounding_boxes_and_filter(results, frame, roi_points):
+    """
+    Draw bounding boxes for detected objects within the ROI.
+    """
     person_count = 0
     detections = []
+
     for box in results[0].boxes:
         bbox = box.xyxy.tolist()[0]
         class_id = int(box.cls.item())
@@ -140,7 +124,7 @@ def detect_objects_person_all_frame(request, image_path=None):
         center_x = int((bbox[0] + bbox[2]) / 2)
         center_y = int((bbox[1] + bbox[3]) / 2)
 
-        # 중심점이 ROI 다각형 내부에 있는지 확인
+        # 중심점이 ROI 내부에 있는지 확인
         if cv2.pointPolygonTest(roi_points, (center_x, center_y), False) >= 0:
             person_count += 1
             detections.append({
@@ -148,9 +132,65 @@ def detect_objects_person_all_frame(request, image_path=None):
                 "confidence": confidence,
                 "bbox": [round(float(coord), 2) for coord in bbox]
             })
-            # ROI 내부 객체 바운딩 박스
+
+            # 바운딩 박스 그리기
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (0, 255, 0), 2)
-            cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)  # 중심점 표시
+            # 중심점 표시
+            cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
+            # 신뢰도 텍스트 추가
+            cv2.putText(frame, f"{confidence:.2f}", (int(bbox[0]), int(bbox[1]) - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+
+    return person_count, detections
+
+
+def detect_objects_person_all_frame(request, image_path=None):
+    # YOLO 모델 로드
+    model = YOLO("../yolov8s.pt")  # YOLO 모델 경로 확인
+
+    # 이미지 소스 선택
+    if image_path:
+        frame = cv2.imread(image_path)
+        if frame is None:
+            return {"error": "Failed to read image. Check the image path."}
+    else:
+        # 웹캠 초기화
+        usb_camera_index = 0
+        default_camera_index = 0
+
+        cap = cv2.VideoCapture(usb_camera_index)
+        if not cap.isOpened():
+            cap = cv2.VideoCapture(default_camera_index)
+
+        if not cap.isOpened():
+            return {"error": "No accessible webcam. Check your USB or default camera connection."}
+
+        time.sleep(2)
+        ret, frame = cap.read()
+        cap.release()
+
+        if not ret:
+            return {"error": "Failed to capture frame from webcam"}
+
+    # 프레임 크기 동적으로 얻기
+    frame_height, frame_width = frame.shape[:2]
+
+    # ROI 좌표 계산
+    roi_points = calculate_roi_points(frame_width, frame_height)
+
+    # ROI 외부를 마스킹한 이미지 생성
+    mask = np.zeros(frame.shape[:2], dtype=np.uint8)
+    cv2.fillPoly(mask, [roi_points], 255)
+    masked_frame = cv2.bitwise_and(frame, frame, mask=mask)
+
+    # YOLO 객체 감지 (사람만)
+    results = model.predict(masked_frame, imgsz=1280, conf=0.5)
+
+    # 바운딩 박스 그리기 및 필터링
+    person_count, detections = draw_bounding_boxes_and_filter(results, frame, roi_points)
+
+    # ROI 시각적 표시
+    cv2.polylines(frame, [roi_points], isClosed=True, color=(0, 255, 255), thickness=3)
 
     # 감지 결과 출력
     print(f"People detected in polygonal ROI: {person_count}")
@@ -159,15 +199,34 @@ def detect_objects_person_all_frame(request, image_path=None):
     _, buffer = cv2.imencode('.jpg', frame)
     img_base64 = base64.b64encode(buffer).decode('utf-8')
 
+    # 전체 혼잡도 계산 (규칙 기반)
+    overall_congestion = determine_congestion(person_count)
+
     # 결과 반환
     return {
         "person_count": person_count,
         "image_data": img_base64,
-        "detections": detections
+        "detections": detections,
+        "overall_congestion": overall_congestion,
+        "congestion_levels": overall_congestion
     }
 
+# 혼잡도 계산 함수이고, roi 안에서 3명 이상 있으면 high, 1명이면 low, 그 외에는 medium
+def determine_congestion(person_count):
+    """
+    Determine congestion level based on person count.
+    """
+    if person_count >= 3:
+        return "High"
+    elif person_count == 1:
+        return "Low"
+    else:
+        return "Medium"
 
-# 혼잡도 순서 혼잡 -> 보통 -> 여유 순으로 if문 구분
+
+
+
+
 
 def detect_objects_person_ver3(request, image_path=None):
     # YOLO 모델 로드
