@@ -29,7 +29,11 @@ class DashboardView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['congestion_data'] = CongestionData.objects.select_related('stop').order_by('-timestamp')[:10]
+        # context['congestion_data'] = CongestionData.objects.select_related('stop').order_by('-timestamp')[:10]
+        # context['congestion_data'] = CongestionData.objects.get().congestion_level 최근 1개 congestion_level만 가져오기
+        context['congestion_data'] = CongestionData.objects.latest('timestamp').congestion_level
+        # context['congestion_data'] = CongestionData.objects.get().congestion_level
+
         return context
 
 
@@ -39,6 +43,7 @@ class DashboardMapView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # context['congestion_data'] = CongestionData.objects.select_related('stop').order_by('-timestamp')[:10]
+        # 최근 1개 congestion_level만 가져오기
         return context
 
 
