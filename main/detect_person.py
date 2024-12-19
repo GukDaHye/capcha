@@ -219,9 +219,9 @@ def determine_congestion(person_count):
     if person_count >= 3:
         return "High"
     elif person_count == 1:
-        return "Low"
+        return "Moderate"
     else:
-        return "Medium"
+        return "Empty"
 
 
 
