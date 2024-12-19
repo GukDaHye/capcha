@@ -377,10 +377,10 @@ def detect_objects_person_ver2(request, image_path=None):
     detections = []
     for box in results[0].boxes:
         bbox = box.xyxy.tolist()[0]
-    center_x = int((bbox[0] + bbox[2]) / 2)
-    center_y = int((bbox[1] + bbox[3]) / 2)
-    confidence = round(float(box.conf.item()), 2)
-    class_id = int(box.cls.item())  # 클래스 ID 가져오기
+        center_x = int((bbox[0] + bbox[2]) / 2)
+        center_y = int((bbox[1] + bbox[3]) / 2)
+        confidence = round(float(box.conf.item()), 2)
+        class_id = int(box.cls.item())  # 클래스 ID 가져오기
 
     # 중심점이 각 ROI 내부에 있는지 확인
     roi_matched = False
