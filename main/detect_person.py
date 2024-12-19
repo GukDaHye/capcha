@@ -372,6 +372,10 @@ def detect_objects_person_ver2(request, image_path=None):
     person_count = len(results[0].boxes)
     print(f"Detected {len(results[0].boxes)} persons.")
 
+    # 결과 이미지 인코딩
+    _, buffer = cv2.imencode('.jpg', frame)
+    img_base64 = base64.b64encode(buffer).decode('utf-8')
+
     # 검출된 객체가 없을 경우 처리
     if person_count == 0:
         return {
@@ -379,7 +383,7 @@ def detect_objects_person_ver2(request, image_path=None):
             "congestion_levels": {key: "Low" for key in scaled_rois.keys()},
             "overall_congestion": "Empty",
             "detections": [],
-            "image_data": None,  # 이미지 데이터가 필요 없을 경우
+            "image_data": img_base64,  # 이미지 데이터가 필요 없을 경우
             "person_count": person_count
         }
 
