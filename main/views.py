@@ -163,7 +163,7 @@ class ObjectDetectionView(View):
             bus_stop = BusStop.objects.get(stop_id=1)
 
             # Save image
-            image_path = self.save_image(result["image_data"], bus_stop.name)
+            image_path = self.save_image(result["image_data"], bus_stop.name) if "image_data" in result else None
             congestion_level = result["overall_congestion"]
 
             # Save to database
