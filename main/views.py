@@ -200,7 +200,7 @@ class ObjectDetectionView(View):
 
             if person_count > 0:
                 print("Sending 'human' via UART...")
-                for _ in range(person_count + 1):
+                for _ in range(person_count):
                     self.send_human(ser)
                     print(f'person_count: {_}')
 
