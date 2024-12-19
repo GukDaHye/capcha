@@ -316,10 +316,35 @@ def detect_objects_person_ver2(request, image_path=None):
     # YOLO 모델 로드
     model = YOLO("../yolov8n.pt")
 
-    # 이미지 파일 읽기
-    frame = cv2.imread(image_path)
-    if frame is None:
-        return {"error": "Failed to read image. Check the image path."}
+    # 이미지 소스 선택
+    if image_path:
+        # 이미지 파일 읽기
+        frame = cv2.imread(image_path)
+        if frame is None:
+            return {"error": "Failed to read image. Check the image path."}
+    else:
+        # 웹캠 초기화
+        usb_camera_index = 0  # USB 카메라 기본 인덱스
+        default_camera_index = 1  # 내장 카메라 기본 인덱스
+
+        # USB 카메라 우선 접근
+        cap = cv2.VideoCapture(usb_camera_index)
+        if not cap.isOpened():
+            # USB 카메라 접근 실패 시 내장 카메라로 전환
+            cap = cv2.VideoCapture(default_camera_index)
+
+        if not cap.isOpened():
+            return {"error": "No accessible webcam. Check your USB or default camera connection."}
+
+        # 카메라 초기화 시간 확보
+        time.sleep(2)  # 카메라 초기화 지연
+
+        # 프레임 캡처
+        ret, frame = cap.read()
+        cap.release()
+
+        if not ret:
+            return {"error": "Failed to capture frame from webcam"}
 
     # 입력 이미지 해상도 확인
     input_height, input_width = frame.shape[:2]

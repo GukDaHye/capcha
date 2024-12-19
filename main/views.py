@@ -132,8 +132,9 @@ class ObjectDetectionView(View):
 
 
     # Use YOLO to detect objects (e.g., from an image file or webcam)
-        image_path = os.path.join(settings.BASE_DIR, "media/yolo_list/bus001.jpeg")
-        result = detect_objects_person_ver2(request, image_path=image_path)
+    #     image_path = os.path.join(settings.BASE_DIR, "media/yolo_list/bus001.jpeg")
+    #     result = detect_objects_person_ver2(request, image_path=image_path)
+        result = detect_objects_person_ver2(request)
 
         # Handle errors
         if "error" in result:
