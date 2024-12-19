@@ -67,7 +67,7 @@ class ObjectDetectionView(View):
         word = "human"
         for char in word:
             self.send_char(ser, char)
-            time.sleep(0.05)  # Add delay for UART transmission
+            time.sleep(0.5)  # Add delay for UART transmission
         print("Sent: 'human'")
 
     def determine_congestion(self, person_locations, rois):
@@ -199,9 +199,12 @@ class ObjectDetectionView(View):
                 print("Sending 'human' via UART...")
                 for _ in range(person_count):
                     self.send_human(ser)
+                    print(f'person_count: {person_count}')
 
             else:
                 print("No humans detected. Nothing to send via UART.")
+
+            self.send_char(ser, '@')  # End transmission
 
 
         except serial.SerialException as e:
