@@ -367,10 +367,21 @@ def detect_objects_person_ver2(request, image_path=None):
         color = (135, 206, 235) if key == 'empty' else (0, 255, 255) if key == 'moderate' else (0, 0, 255)
         cv2.polylines(frame, [points], isClosed=True, color=color, thickness=2)
 
-    # YOLO 객체 감지 (사람만)
+    # 사람 감지 결과
     results = model.predict(frame, imgsz=640, conf=0.5, classes=0)
     person_count = len(results[0].boxes)
     print(f"Detected {len(results[0].boxes)} persons.")
+
+    # 검출된 객체가 없을 경우 처리
+    if person_count == 0:
+        return {
+            "region_counts": {key: 0 for key in scaled_rois.keys()},
+            "congestion_levels": {key: "Low" for key in scaled_rois.keys()},
+            "overall_congestion": "여유",
+            "detections": [],
+            "image_data": None,  # 이미지 데이터가 필요 없을 경우
+            "person_count": person_count
+        }
 
     # 각 구역별 사람 수 계산
     region_counts = {key: 0 for key in scaled_rois.keys()}
@@ -382,27 +393,26 @@ def detect_objects_person_ver2(request, image_path=None):
         confidence = round(float(box.conf.item()), 2)
         class_id = int(box.cls.item())  # 클래스 ID 가져오기
 
-    # 중심점이 각 ROI 내부에 있는지 확인
-    roi_matched = False
-    for key, points in scaled_rois.items():
-        if cv2.pointPolygonTest(points, (center_x, center_y), False) >= 0:
-            region_counts[key] += 1
-            roi_matched = True
-            break  # 첫 번째 ROI에만 포함되도록 처리
+        # 중심점이 각 ROI 내부에 있는지 확인
+        roi_matched = False
+        for key, points in scaled_rois.items():
+            if cv2.pointPolygonTest(points, (center_x, center_y), False) >= 0:
+                region_counts[key] += 1
+                roi_matched = True
+                break  # 첫 번째 ROI에만 포함되도록 처리
 
-    # ROI 내부에 포함된 경우 바운딩 박스 그리기
-    if roi_matched:
-        cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (0, 255, 0), 2)
-        cv2.putText(frame, f"{confidence:.2f}", (int(bbox[0]), int(bbox[1]) - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+        # ROI 내부에 포함된 경우 바운딩 박스 그리기
+        if roi_matched:
+            cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (0, 255, 0), 2)
+            cv2.putText(frame, f"{confidence:.2f}", (int(bbox[0]), int(bbox[1]) - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
-    # 감지 정보 추가 (class 포함)
-    detections.append({
-        "class": class_id,  # 클래스 추가
-        "confidence": confidence,
-        "bbox": [round(float(coord), 2) for coord in bbox]
-    })
-
+        # 감지 정보 추가 (class 포함)
+        detections.append({
+            "class": class_id,  # 클래스 추가
+            "confidence": confidence,
+            "bbox": [round(float(coord), 2) for coord in bbox]
+        })
 
     # 구역별 혼잡도 계산
     congestion_levels = {}
@@ -424,7 +434,6 @@ def detect_objects_person_ver2(request, image_path=None):
     else:
         overall_congestion = "여유"  # 사람이 없으면 여유로 간주
 
-
     # 결과 이미지 인코딩
     _, buffer = cv2.imencode('.jpg', frame)
     img_base64 = base64.b64encode(buffer).decode('utf-8')
@@ -438,3 +447,4 @@ def detect_objects_person_ver2(request, image_path=None):
         "image_data": img_base64,
         "person_count": person_count
     }
+
