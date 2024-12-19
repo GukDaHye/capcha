@@ -369,6 +369,8 @@ def detect_objects_person_ver2(request, image_path=None):
 
     # YOLO 객체 감지 (사람만)
     results = model.predict(frame, imgsz=640, conf=0.5, classes=0)
+    person_count = len(results[0].boxes)
+    print(f"Detected {len(results[0].boxes)} persons.")
 
     # 각 구역별 사람 수 계산
     region_counts = {key: 0 for key in scaled_rois.keys()}
@@ -435,5 +437,6 @@ def detect_objects_person_ver2(request, image_path=None):
         "congestion_levels": congestion_levels,  # 구역별 혼잡도 반환
         "overall_congestion": overall_congestion,  # 전체 혼잡도 반환
         "detections": detections,
-        "image_data": img_base64
+        "image_data": img_base64,
+        "person_count": person_count
     }

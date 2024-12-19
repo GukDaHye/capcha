@@ -141,7 +141,8 @@ class ObjectDetectionView(View):
             return JsonResponse({"error": result["error"]}, status=500)
 
         # Count persons detected
-        person_count = sum(1 for det in result["detections"] if det["class"] == 0)
+        # person_count = sum(1 for det in result["detections"] if det["class"] == 0)
+        person_count = result["person_count"]
         print(f"Detected {person_count} persons.")
 
         # Extract person detections
