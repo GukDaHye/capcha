@@ -415,17 +415,15 @@ def detect_objects_person_ver2(request, image_path=None):
             congestion_levels[key] = "High"
 
     # 전체 혼잡도 계산 (규칙 기반)
-    if region_counts['high'] > 0:
+    if region_counts['high'] > 0 and region_counts['moderate'] > 0 and region_counts['empty'] > 0:
         overall_congestion = "혼잡"
-    elif region_counts['moderate'] > 0:
-        if region_counts['empty'] > 0:
-            overall_congestion = "보통"
-        else:
-            overall_congestion = "혼잡"
+    elif region_counts['moderate'] > 0 and region_counts['empty'] > 0:
+        overall_congestion = "보통"
     elif region_counts['empty'] > 0:
         overall_congestion = "여유"
     else:
         overall_congestion = "여유"  # 사람이 없으면 여유로 간주
+
 
     # 결과 이미지 인코딩
     _, buffer = cv2.imencode('.jpg', frame)

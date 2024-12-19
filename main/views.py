@@ -193,15 +193,12 @@ class ObjectDetectionView(View):
             # elif congestion_level == 'Empty':
             #     self.send_char(ser, 'E')  # Empty congestion
 
-            self.send_char(ser, '@')  # End transmission
-            self.send_human(ser)
-
 
             if person_count > 0:
                 print("Sending 'human' via UART...")
-                for _ in range(person_count):
+                for _ in range(person_count+1):
                     self.send_human(ser)
-                    print(f'person_count: {person_count}')
+                    print(f'person_count: {_}')
 
             else:
                 print("No humans detected. Nothing to send via UART.")
