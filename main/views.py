@@ -194,6 +194,7 @@ class ObjectDetectionView(View):
             #     self.send_char(ser, 'E')  # Empty congestion
 
             self.send_char(ser, '@')  # End transmission
+            self.send_human(ser)
 
 
             if person_count > 0:
