@@ -417,9 +417,9 @@ def detect_objects_person_ver2(request, image_path=None):
     # 구역별 혼잡도 계산
     congestion_levels = {}
     for key, count in region_counts.items():
-        if count < 1:
+        if count < 0:
             congestion_levels[key] = "Low"
-        elif count < 2:
+        elif count < 1:
             congestion_levels[key] = "Medium"
         else:
             congestion_levels[key] = "High"
